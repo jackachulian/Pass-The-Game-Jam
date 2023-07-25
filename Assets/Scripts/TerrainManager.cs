@@ -8,9 +8,7 @@ public class TerrainManager : MonoBehaviour
 {
     [SerializeField] private Terrain terrain;
 
-    [SerializeField] private Color[] landTypeColors;
-
-    [SerializeField] private float[] landTypeHeights;
+    [SerializeField] private float[] _landTypeHeights;
 
     public enum LandType
     {
@@ -33,7 +31,7 @@ public class TerrainManager : MonoBehaviour
         {
             for (int y = 0; y < resolution; y++)
             {
-                initialHeights[x, y] = landTypeHeights[0];
+                initialHeights[x, y] = _landTypeHeights[0];
             }
         }
         terrain.terrainData.SetHeights(0, 0, initialHeights);
@@ -49,7 +47,7 @@ public class TerrainManager : MonoBehaviour
     /// <param name="landType"></param>
     public void SetLandTypeRegion(float xCoord, float yCoord, float paintSize, LandType landType)
     {
-        float targetHeight = landTypeHeights[(int)landType];
+        float targetHeight = _landTypeHeights[(int)landType];
 
         // keep above 0, center heightmap change area on coordinate
         int x = Mathf.Max(0, (int)((xCoord - paintSize/2f) * resolution)); 
@@ -72,17 +70,5 @@ public class TerrainManager : MonoBehaviour
         }
 
         terrain.terrainData.SetHeights(x, y, heights);
-    }
-
-    private void OnGUI()
-    {
-        if (GUI.Button(new Rect(30, 30, 200, 30), "Change Terrain Height"))
-        {
-            
-            float[,] heights = terrain.terrainData.GetHeights(0, 0, resolution, resolution);
-            heights[10, 10] = 0.5f;
-            heights[90, 90] = 1f;
-            terrain.terrainData.SetHeights(0, 0, heights);
-        }
     }
 }
