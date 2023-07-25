@@ -20,6 +20,12 @@ public class PaintDrawer : MonoBehaviour
 
     private bool _touchedLastFrame;
 
+    private bool _withinRange; // if player is within painting distance
+    public bool withinRange { get { return _withinRange; } }
+
+    private bool _hoveringOverCanvas; // if within range and cursor is pointed towards the canvas
+    public bool hoveringOverCanvas { get { return _hoveringOverCanvas; } }
+
     private void Start()
     {
         
@@ -33,13 +39,20 @@ public class PaintDrawer : MonoBehaviour
 
     private void CheckSelectColor()
     {
-        if (Input.GetMouseButtonDown(0) && Physics.Raycast(transform.position, transform.forward, out RaycastHit paletteColorTouch, 10f, _paletteColorLayerMask))
+        // Check for hovered palette color
+        if (Physics.Raycast(transform.position, transform.forward, out RaycastHit paletteColorTouch, 10f, _paletteColorLayerMask))
         {
             Debug.Log("TOUCH " + paletteColorTouch.collider.gameObject.name);
             PaletteColor paletteColorObj = paletteColorTouch.collider.gameObject.GetComponent<PaletteColor>();
             if (!paletteColorObj) return;
 
-            Color drawColor = paletteColorObj.GetComponent<MeshRenderer>().material.color;
+            // set hover to true - this will make the color lit up this frame, after which palettecolor will set this back to false
+            paletteColorObj.hovered = true;
+
+            // only select if clicked this frame
+            if (!Input.GetMouseButtonDown(0)) return;
+
+            Color drawColor = paletteColorObj.matBaseColor;
             SetLandType(paletteColorObj.landType, drawColor);
 
             Debug.Log("set color to " + paletteColorObj);
@@ -55,11 +68,16 @@ public class PaintDrawer : MonoBehaviour
 
     private void Draw()
     {
+        float distanceFromCanvas = (_canvas.transform.position - transform.position).magnitude;
+        _withinRange = distanceFromCanvas < _maxPaintDistance;
+        if (!_withinRange) return;
+
         if (_currentLandTypeDraw == TerrainManager.LandType.Empty) return;
 
         bool drawing = Input.GetMouseButton(0);
+        _hoveringOverCanvas = Physics.Raycast(transform.position, transform.forward, out RaycastHit _paintTouch, _maxPaintDistance + 5f, _canvasLayerMask);
 
-        if (drawing && Physics.Raycast(transform.position, transform.forward, out RaycastHit _paintTouch, _maxPaintDistance, _canvasLayerMask))
+        if (drawing && _hoveringOverCanvas)
         {
             var touchPosTexCoord = _paintTouch.textureCoord;
 

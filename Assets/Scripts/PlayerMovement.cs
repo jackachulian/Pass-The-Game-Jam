@@ -6,7 +6,10 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private Camera mainCamera;
     [SerializeField] Rigidbody rb;
-    [SerializeField] private LayerMask terrainLayerMask; 
+
+    [SerializeField] private float jumpSpeed = 5f;
+    [SerializeField] private Transform jumpCheck;
+    [SerializeField] private LayerMask terrainLayerMask;
 
     void Update()
     {
@@ -24,15 +27,9 @@ public class PlayerMovement : MonoBehaviour
 
         rb.velocity = velocity;
 
-
-        // Send a raycast from above the player to right above their head.
-        // If it hits terrain then player is below the terrain,
-        // probably because they placed a mountain on themself.
-
-        if (Physics.Raycast(rb.position + Vector3.up * 22.5f, -transform.up, out RaycastHit hit, 20f, terrainLayerMask))
+        if (Input.GetButtonDown("Jump") && Physics.CheckSphere(jumpCheck.position, 1f, terrainLayerMask))
         {
-            // send to point plus half of capsule collider's height (5) because transform is in center of player
-            rb.position = hit.point + Vector3.up * 2.5f;
+            rb.velocity = new Vector3(rb.velocity.x, jumpSpeed, rb.velocity.z);
         }
     }
 }
